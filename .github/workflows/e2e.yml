@@ -179,9 +179,10 @@ jobs:
           echo '{"data-root":"/home/runner/work/docker-data"}' \
             | sudo tee /etc/docker/daemon.json
           sudo systemctl start docker
-          mkdir -p /home/runner/work/.m2/repository
-          mkdir -p ~/.m2
-          ln -sf /home/runner/work/.m2/repository ~/.m2/repository
+          echo "=== Disk usage after Docker data dir migration ==="
+          df -h
+          echo "=== Root partition top directories ==="
+          sudo du -sh /home/runner/* /var/* /tmp 2>/dev/null | sort -rh | head -20
       - uses: actions/checkout@v4
         with:
           submodules: true
