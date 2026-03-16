@@ -174,11 +174,14 @@ jobs:
           remove-docker-images: 'true'
       - name: Move Docker data dir to LVM volume
         run: |
-          sudo systemctl stop docker
+          sudo systemctl stop docker.socket docker.service
           sudo mkdir -p /home/runner/work/docker-data
           echo '{"data-root":"/home/runner/work/docker-data"}' \
             | sudo tee /etc/docker/daemon.json
           sudo systemctl start docker
+          mkdir -p /home/runner/work/.m2/repository
+          mkdir -p ~/.m2
+          ln -sf /home/runner/work/.m2/repository ~/.m2/repository
       - uses: actions/checkout@v4
         with:
           submodules: true
