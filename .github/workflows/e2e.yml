@@ -172,6 +172,13 @@ jobs:
           remove-haskell: 'true'
           remove-codeql: 'true'
           remove-docker-images: 'true'
+      - name: Move Docker data dir to LVM volume
+        run: |
+          sudo systemctl stop docker
+          sudo mkdir -p /home/runner/work/docker-data
+          echo '{"data-root":"/home/runner/work/docker-data"}' \
+            | sudo tee /etc/docker/daemon.json
+          sudo systemctl start docker
       - uses: actions/checkout@v4
         with:
           submodules: true
