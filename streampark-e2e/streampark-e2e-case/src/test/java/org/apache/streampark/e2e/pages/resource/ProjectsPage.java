@@ -91,8 +91,18 @@ public class ProjectsPage extends NavBarPage implements ResourcePage.Tab {
         createProjectForm.inputProjectUrl.sendKeys(projectUrl);
         createProjectForm.selectBranchDropdown.click();
 
-        new WebDriverWait(driver, Constants.DEFAULT_WEBDRIVER_WAIT_DURATION)
-            .until(ExpectedConditions.visibilityOfAllElements(createProjectForm.selectRefs));
+        try {
+            new WebDriverWait(driver, Constants.DEFAULT_WEBDRIVER_WAIT_DURATION)
+                .until(ExpectedConditions.visibilityOfAllElements(createProjectForm.selectRefs));
+        } catch (Exception e) {
+            for (int i = 0; i < createProjectForm.selectRefs.size(); i++) {
+                WebElement el = createProjectForm.selectRefs.get(i);
+                System.out.printf(
+                    "[DEBUG] selectRefs Node %d: text='%s', isDisplayed=%s%n",
+                    i, el.getText(), el.isDisplayed());
+            }
+            throw e;
+        }
         createProjectForm.selectRefs.stream()
             .filter(e -> e.getText().equalsIgnoreCase(projectRefs))
             .findFirst()
