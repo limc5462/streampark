@@ -174,18 +174,35 @@ jobs:
           remove-docker-images: 'true'
       - name: Move Docker data dir to LVM volume
         run: |
+          echo "=== Disk layout before migration ==="
+          df -h
+          echo "=== Mount points ==="
+          mount | grep -E "ext4|xfs|overlay"
+          echo "=== Available space by mount point ==="
+          df -h | grep -E "^/dev|^Filesystem"
+          
           sudo systemctl stop docker.socket docker.service
+          echo "=== Old Docker data directory size ==="
+          sudo du -sh /var/lib/docker 2>/dev/null || echo "No old Docker data found"
+          
           sudo mkdir -p /home/runner/work/docker-data
-          echo '{"data-root":"/home/runner/work/docker-data"}' \
+          echo '{"data-root":"/home/runner/work/docker-data","storage-driver":"overlay2"}' \
             | sudo tee /etc/docker/daemon.json
           sudo systemctl start docker
+          
+          echo "=== Docker configuration ==="
+          docker info | grep -E "Docker Root Dir|Storage Driver"
+          
+          echo "=== Disk usage after Docker data dir migration ==="
+          df -h
+          echo "=== Docker data directory ==="
+          sudo du -sh /home/runner/work/docker-data 2>/dev/null || echo "Directory not found or empty"
+          echo "=== Root partition top directories ==="
+          sudo du -sh /home/runner/* /var/* /tmp 2>/dev/null | sort -rh | head -20
+          
           mkdir -p /home/runner/work/.m2/repository
           mkdir -p ~/.m2
           ln -sf /home/runner/work/.m2/repository ~/.m2/repository
-          echo "=== Disk usage after Docker data dir migration ==="
-          df -h
-          echo "=== Root partition top directories ==="
-          sudo du -sh /home/runner/* /var/* /tmp 2>/dev/null | sort -rh | head -20
       - uses: actions/checkout@v4
         with:
           submodules: true
@@ -211,13 +228,27 @@ jobs:
           path: /tmp
       - name: Load Docker Images
         run: |
+          echo "=== Disk usage before loading Docker images ==="
+          df -h
           docker load -i /tmp/standalone-image.tar \
           && rm -f /tmp/standalone-image.tar
+          echo "=== Disk usage after loading Docker images ==="
+          df -h
+          echo "=== Docker images ==="
+          docker images
       - name: Run Test
         run: |
+          echo "=== Disk usage before running tests ==="
+          df -h
           ./mvnw -B -f streampark-e2e/pom.xml -am \
             -DfailIfNoTests=false \
             -Dtest=${{ matrix.case.class }} test
+          echo "=== Disk usage after running tests ==="
+          df -h
+          echo "=== Docker containers ==="
+          docker ps -a
+          echo "=== Docker images ==="
+          docker images
       - uses: actions/upload-artifact@v4
         if: always()
         name: Upload Recording
