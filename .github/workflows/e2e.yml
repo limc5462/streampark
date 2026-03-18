@@ -24,7 +24,6 @@ on:
       - dev-*
       - test
 
-
 name: E2E
 
 concurrency:
@@ -166,7 +165,7 @@ jobs:
       - name: Maximize runner space
         uses: easimon/maximize-build-space@fc881a613ad2a34aca9c9624518214ebc21dfc0c
         with:
-          root-reserve-mb: 30720
+          root-reserve-mb: 87720
           temp-reserve-mb: 10240
           remove-dotnet: 'true'
           remove-android: 'true'
