@@ -163,9 +163,9 @@ jobs:
       RECORDING_PATH: /tmp/recording-${{ matrix.case.name }}
     steps:
       - name: Maximize runner space
-        uses: easimon/maximize-build-space@fc881a613ad2a34aca9c9624518214ebc21dfc0c
+        uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 87720
+          root-reserve-mb: 30720
           temp-reserve-mb: 10240
           remove-dotnet: 'true'
           remove-android: 'true'
